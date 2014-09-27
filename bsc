@@ -1,0 +1,283 @@
+#!/usr/bin/env ruby
+#项目地址：https://github.com/gmg137/bsc
+
+
+#抓取方法
+def snanum(str,cla)
+  if cla == "asnap"
+    clas = /\|\s\d+\s{1,4}\|/
+  elsif cla == "single"
+    clas = /single/
+  elsif cla == "prepost"
+    clas = /pre|post/
+  elsif cla == "sya"
+    clas = /number|timeline/
+  end
+  $data = []
+  str.each_line do |i|
+    if clas.match(i) != nil && i !~ /\|\s0\s{1,4}\|/ 
+      i.scan(/\|\s(\d+)\s{1,4}\|/)
+    end
+    if $1 != nil
+      $data += [$1]
+    end
+  end
+  return $data
+end
+
+
+#获取命令参数
+if ARGV[0] == "-c"
+  config = `snapper list-configs 2>/dev/null | awk 'ORS=" " {if($1~/[a-zA-Z]+/) print $1}'`
+  config.split(" ").each do |i|
+    if i == ARGV[1]
+      $conf,$confp,$ones,$twos,$twosp = ARGV
+    end
+  end
+  if not $conf
+    puts "\n配置文件 \"#{ARGV[1]}\" 不存在！\n\n"
+    exit
+  end
+elsif ARGV[0] =~ /-i|-l|-d|info|list|delete/
+  $conf = '-c'
+  $confp = 'root'
+  $ones,$twos,$twosp = ARGV
+end
+
+
+#获取快照信息
+snalit = `snapper #$conf #$confp list 2>/dev/null`
+if snalit != "" &&  $ones =~ /-i|-l|-d|info|list|delete/
+  #所有快照
+  asnap = snanum(snalit,'asnap')
+  #single 快照
+  single = snanum(snalit,'single')
+  #pre-post 快照
+  prepost = snanum(snalit,'prepost')
+  #系统自动创建的快照
+  sya = snanum(snalit,'sya')
+elsif $ones =~ /-i|-l|-d|info|list|delete/
+  puts "\n必须拥有 root 权限方可进行此操作！\n\n"
+  exit
+end
+
+
+#列出快照
+if $ones == "-l" || $ones == "list"
+  print snalit
+  exit
+end
+
+
+#查看快照概要
+if $ones =~ /-i|info/
+  puts "\n快照类型      快照个数\n-------------------------\n single\t\t#{single.length}\n pre-post\t#{prepost.length}\n-------------------------\n  合计\t\t#{asnap.length}\n"
+  exit
+end
+
+
+#删除快照
+if $ones =~ /-d|delete/
+  #删除全部快照
+  if $twos =~ /all|-a/
+    if asnap.length == 0
+      puts "\n没有快照可清除！"
+      exit
+    elsif $twosp != nil
+      #删除最旧的n个快照
+      if $twosp =~ /^[1-9][0-9]*$/
+        print "\n快照编号:"
+        print asnap[0...Integer($twosp)].join(' ')
+        print "\n\n确认要删除以上快照吗？[yes/no]："
+        yn = STDIN.gets.chomp()
+        if yn =~ /yes|y|Y|YES/
+          puts `snapper #$conf #$confp delete #{asnap[0...Integer($twosp)].join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        end
+        exit
+      #删除最新的n个快照
+      elsif $twosp =~ /^-[1-9][0-9]*$/
+        if asnap.length < Integer($twosp).abs
+          $twosp = "0"
+        end
+        print "\n快照编号:"
+        print asnap[Integer($twosp)..-1].join(' ')
+        print "\n\n确认要删除以上快照吗？[yes/no]："
+        yn = STDIN.gets.chomp()
+        if yn =~ /yes|y|Y|YES/
+          puts `snapper #$conf #$confp delete #{asnap[Integer($twosp)..-1].join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        end
+        exit
+      else
+        puts "\n警告：参数必须为正负整数！\n\n"
+        exit
+      end
+    else
+      print "\n快照编号:"
+      print asnap.join(' ')
+      print "\n\n确认要删除以上快照吗？[yes/no]："
+      yn = STDIN.gets.chomp()
+      if yn =~ /yes|y|Y|YES/
+        puts `snapper #$conf #$confp delete #{asnap..join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+      end
+      exit
+    end
+
+  #删除单独(single)快照
+  elsif $twos =~ /single|-s/
+    if single.length == 0
+      puts "\n没有快照可清除！"
+      exit
+    elsif $twosp != nil
+      #删除最旧的n个快照
+      if $twosp =~ /^[1-9][0-9]*$/
+        print "\n快照编号:"
+        print single[0...Integer($twosp)].join(' ')
+        print "\n\n确认要删除以上快照吗？[yes/no]："
+        yn = STDIN.gets.chomp()
+        if yn =~ /yes|y|Y|YES/
+          puts `snapper #$conf #$confp delete #{single[0...Integer($twosp)].join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        end
+        exit
+      #删除最新的n个快照
+      elsif $twosp =~ /^-[1-9][0-9]*$/
+        if single.length < Integer($twosp).abs
+          $twosp = "0"
+        end
+        print "\n快照编号:"
+        print single[Integer($twosp)..-1].join(' ')
+        print "\n\n确认要删除以上快照吗？[yes/no]："
+        yn = STDIN.gets.chomp()
+        if yn =~ /yes|y|Y|YES/
+          puts `snapper #$conf #$confp delete #{single[Integer($twosp)..-1].join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        end
+        exit
+      else
+        puts "\n警告：参数必须为正负整数！\n\n"
+        exit
+      end
+    else
+      print "\n快照编号:"
+      print single.join(' ')
+      print "\n\n确认要删除以上快照吗？[yes/no]："
+      yn = STDIN.gets.chomp()
+      if yn =~ /yes|y|Y|YES/
+        puts `snapper #$conf #$confp delete #{single..join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+      end
+      exit
+    end
+
+  #删除差异(pre-post)快照
+  elsif $twos =~ /pre-post|-p/
+    if prepost.length == 0
+      puts "\n没有快照可清除！"
+      exit
+    elsif $twosp != nil
+      #删除最旧的n个快照
+      if $twosp =~ /^[1-9][0-9]*$/
+        print "\n快照编号:"
+        print prepost[0...Integer($twosp)].join(' ')
+        print "\n\n确认要删除以上快照吗？[yes/no]："
+        yn = STDIN.gets.chomp()
+        if yn =~ /yes|y|Y|YES/
+          puts `snapper #$conf #$confp delete #{prepost[0...Integer($twosp)].join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        end
+        exit
+      #删除最新的n个快照
+      elsif $twosp =~ /^-[1-9][0-9]*$/
+        if prepost.length < Integer($twosp).abs
+          $twosp = "0"
+        end
+        print "\n快照编号:"
+        print prepost[Integer($twosp)..-1].join(' ')
+        print "\n\n确认要删除以上快照吗？[yes/no]："
+        yn = STDIN.gets.chomp()
+        if yn =~ /yes|y|Y|YES/
+          puts `snapper #$conf #$confp delete #{prepost[Integer($twosp)..-1].join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        end
+        exit
+      else
+        puts "\n警告：参数必须为正负整数！\n\n"
+        exit
+      end
+    else
+      print "\n快照编号:"
+      print prepost.join(' ')
+      print "\n\n确认要删除以上快照吗？[yes/no]："
+      yn = STDIN.gets.chomp()
+      if yn =~ /yes|y|Y|YES/
+        puts `snapper #$conf #$confp delete #{prepost..join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+      end
+      exit
+    end
+
+  #删除系统自动创建的快照
+  elsif $twos =~ /sya|-S/
+    if sya.length == 0
+      puts "\n没有快照可清除！"
+      exit
+    elsif $twosp != nil
+      #删除最旧的n个快照
+      if $twosp =~ /^[1-9][0-9]*$/
+        print "\n快照编号:"
+        print sya[0...Integer($twosp)].join(' ')
+        print "\n\n确认要删除以上快照吗？[yes/no]："
+        yn = STDIN.gets.chomp()
+        if yn =~ /yes|y|Y|YES/
+          puts `snapper #$conf #$confp delete #{sya[0...Integer($twosp)].join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        end
+        exit
+      #删除最新的n个快照
+      elsif $twosp =~ /^-[1-9][0-9]*$/
+        if sya.length < Integer($twosp).abs
+          $twosp = "0"
+        end
+        print "\n快照编号:"
+        print sya[Integer($twosp)..-1].join(' ')
+        print "\n\n确认要删除以上快照吗？[yes/no]："
+        yn = STDIN.gets.chomp()
+        if yn =~ /yes|y|Y|YES/
+          puts `snapper #$conf #$confp delete #{sya[Integer($twosp)..-1].join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        end
+        exit
+      else
+        puts "\n警告：参数必须为正负整数！\n\n"
+        exit
+      end
+    else
+      print "\n快照编号:"
+      print sya.join(' ')
+      print "\n\n确认要删除以上快照吗？[yes/no]："
+      yn = STDIN.gets.chomp()
+      if yn =~ /yes|y|Y|YES/
+        puts `snapper #$conf #$confp delete #{sya..join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+      end
+      exit
+    end
+  else
+    print "\n警告：快照类型错误！\n\n    请使用以下快照类型：\n\t全部：all\t-a\n\t独立：single\t-s\n\t差异：pre-post\t-p\n\t系统：sya\t-S\n"
+    exit
+  end
+end
+
+
+#使用帮助
+puts <<-STAR
+说明:清理 Btrfs 文件系统下由 snapper 工具产生的快照\n\n   用法:\n\tbsc <命令> [命令选项] [命令参数]\n
+   全局选项:\n
+   \t-c\t指定配置文件，如 root(默认) 或 home 等\n
+   命令:\n
+   \tinfo, -i\t查看快照信息。\n
+   \tlist, -l\t列出所有快照。\n
+   \tdelete, -d\t删除快照。\n
+\t'delete' 命令选项：
+\t   all, -a\t删除全部快照。
+\t   single, -s\t删除全部独立（single）快照。
+\t   pre-post, -p\t删除全部差异（pre-post）快照。
+\t   sya, -S\t删除全部由系统自动生成的快照。\n
+\t'delete' 命令参数：
+\t   number\t删除最旧的 n 个快照。(number 为正整数)
+\t   -number\t删除最新的 n 个的快照。(-number 为负整数)\n
+   示例：
+\t删除最旧的5个独立快照:\n\t   bsc -d -s 5\n
+\t删除所有差异快照:\n\t   bsc -d -p\n
+STAR
