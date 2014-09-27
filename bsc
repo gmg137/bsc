@@ -1,0 +1,176 @@
+#!/bin/bash
+#项目地址：https://github.com/gmg137/bsc
+
+if [[ -n `snapper list 2>/dev/null` &&  $1 =~ -i|-l|-d|info|list|delete ]];then
+    #所有快照
+    asnap=(`snapper list 2>/dev/null | awk 'ORS=" " {if($3~/[0-9]+/ && $3 != 0) print $3}'`)
+    #single 快照
+    Single=(`snapper list 2>/dev/null | awk 'ORS=" " {if($3~/[0-9]+/ && $1 == "single" && $3 != 0) print $3}'`)
+    #pre-post 快照
+    PrePost=(`snapper list 2>/dev/null | awk 'ORS=" " {if($3~/[0-9]+/ && $1~/pre|post/ && $3 != 0) print $3}'`)
+elif [[ $1 =~ -i|-l|-d|info|list|delete ]];then
+    echo -e "\n必须拥有 root 权限方可进行此操作！\n"
+    exit
+fi
+
+#列出快照
+if [[ $1 = "-l" || $1 = "list" ]];then
+    snapper list
+    exit
+fi
+
+#查看快照概要
+if [[ $1 = "-i" || $1 = "info" ]];then
+    echo -e "\n快照类型      快照个数\n-------------------------\n single\t\t${#Single[*]}\n pre-post\t${#PrePost[*]}\n-------------------------\n  合计\t\t${#asnap[*]}\n"
+    exit
+fi
+
+#删除快照
+if [[ $1 = "-d"  || $1 = "delete" ]];then
+    #删除全部快照
+    if [[ $2 = "all" || $2 = "-a" ]];then
+        if [[ -z ${#asnap[*]} ]];then
+            echo -e "\n没有快照可清除！"
+            exit
+        elif [[ -n $3 ]];then
+            #删除最旧的n个快照
+            if [[ $3 =~ ^[1-9][0-9]*$ ]];then
+                echo -e  "\n快照编号: ${asnap[*]:0:$3}\n"
+                read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+                if [[ $yn =~ yes|y|Y|YES ]];then
+                    snapper delete ${asnap[*]:0:$3}
+                    echo "删除成功！"
+                fi
+                exit
+            #删除最新的n个快照
+            elif [[ $3 =~ ^-[1-9][0-9]*$ ]];then
+                sta=${#asnap[*]}$3
+                if [[ $sta -ge 0 ]];then
+                    sta=${#asnap[*]}$3
+                else
+                    sta=0
+                fi
+                echo -e  "\n快照编号: ${asnap[*]:$sta:${#asnap[*]}}\n"
+                read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+                if [[ $yn =~ yes|y|Y|YES ]];then
+                    snapper delete ${asnap[*]:$sta:${#asnap[*]}} &&
+                    echo "删除成功！"
+                fi
+                exit
+            else
+                echo "警告：参数必须为正负整数！"
+                exit
+            fi
+        fi
+        echo -e  "\n快照编号: ${asnap[*]}\n"
+        read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+        if [[ $yn =~ yes|y|Y|YES ]];then
+            snapper delete ${asnap[*]}
+            echo "删除成功！"
+        fi
+        exit
+    #删除单独(single)快照
+    elif [[ $2 = "single" || $2 = "-s" ]];then
+        if [[ ${#Single[*]} = 0 ]];then
+            echo -e "\n没有快照可清除！"
+            exit
+        elif [[ -n $3 ]];then
+            #删除最旧的n个快照
+            if [[ $3 =~ ^[1-9][0-9]*$ ]];then
+                echo -e  "\n快照编号: ${Single[*]:0:$3}\n"
+                read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+                if [[ $yn =~ yes|y|Y|YES ]];then
+                    snapper delete ${Single[*]:0:$3}
+                    echo "删除成功！"
+                fi
+                exit
+            #删除最新的n个快照
+            elif [[ $3 =~ ^-[1-9][0-9]*$ ]];then
+                sta=${#Single[*]}$3
+                if [[ $sta -ge 0 ]];then
+                    sta=${#Single[*]}$3
+                else
+                    sta=0
+                fi
+                echo -e  "\n快照编号: ${Single[*]:$sta:${#Single[*]}}\n"
+                read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+                if [[ $yn =~ yes|y|Y|YES ]];then
+                    snapper delete ${Single[*]:$sta:${#Single[*]}}
+                    echo "删除成功！"
+                fi
+                exit
+            else
+                echo "警告：参数必须为正负整数！"
+                exit
+            fi
+        fi
+        echo -e  "\n快照编号: ${Single[*]}\n"
+        read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+        if [[ $yn =~ yes|y|Y|YES ]];then
+            snapper delete ${Single[*]}
+            echo "删除成功！"
+        fi
+        exit
+    #删除差异(pre-post)快照
+    elif [[ $2 = "pre-post" || $2 = "-p" ]];then
+        if [[ ${#PrePost[*]} = 0 ]];then
+            echo -e "\n没有快照可清除！"
+            exit
+        elif [[ -n $3 ]];then
+            #删除最旧的n个快照
+            if [[ $3 =~ ^[1-9][0-9]*$ ]];then
+                echo -e  "\n快照编号: ${PrePost[*]:0:$3}\n"
+                read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+                if [[ $yn =~ yes|y|Y|YES ]];then
+                    snapper delete ${PrePost[*]:0:$3}
+                    echo "删除成功！"
+                fi
+                exit
+            #删除最新的n个快照
+            elif [[ $3 =~ ^-[1-9][0-9]*$ ]];then
+                sta=${#PrePost[*]}$3
+                if [[ $sta -ge 0 ]];then
+                    sta=${#PrePost[*]}$3
+                else
+                    sta=0
+                fi
+                echo -e  "\n快照编号: ${PrePost[*]:$sta:${#PrePost[*]}}\n"
+                read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+                if [[ $yn =~ yes|y|Y|YES ]];then
+                    snapper delete ${PrePost[*]:$sta:${#PrePost[*]}}
+                    echo "删除成功！"
+                fi
+                exit
+            else
+                echo "警告：参数必须为正负整数！"
+                exit
+            fi
+        fi
+        echo -e  "\n快照编号: ${PrePost[*]}\n"
+        read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+        if [[ $yn =~ yes|y|Y|YES ]];then
+            snapper delete ${PrePost[*]}
+            echo "删除成功！"
+        fi
+        exit
+    else
+        echo -e "\n警告：快照类型错误！\n\n    请使用以下快照类型：\n\t全部：all\t-a\n\t独立：single\t-s\n\t差异：pre-post\t-p\n"
+        exit
+    fi
+fi
+
+#使用帮助
+echo -e "说明:清理 Btrfs 文件系统下 snapper 工具产生的快照\n\n   用法:\n\tbsc <命令> [命令选项] [命令参数]\n"
+echo -e "   命令:\n\tinfo, -i\t查看快照信息。\n"
+echo -e "   \tlist, -l\t列出所有快照。\n"
+echo -e "   \tdelete, -d\t删除快照。\n"
+echo -e "\t'delete' 命令选项："
+echo -e "\t   all, -a\t删除全部快照。"
+echo -e "\t   single, -s\t删除全部独立（single）快照。"
+echo -e "\t   pre-post, -p\t删除全部差异（pre-post）快照。\n"
+echo -e "\t'delete' 命令参数："
+echo -e "\t   number\t删除最旧的 n 个快照。(number 为正整数)"
+echo -e "\t   -number\t删除最新的 n 个的快照。(number 为负整数)\n"
+echo -e "   示例："
+echo -e "\t删除最旧的5个独立快照:\n\t   bsc -d -s 5\n"
+echo -e "\t删除所有差异快照:\n\t   bsc -d -p\n"
