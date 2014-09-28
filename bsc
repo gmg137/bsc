@@ -8,6 +8,8 @@ if [[ -n `snapper list 2>/dev/null` &&  $1 =~ -i|-l|-d|info|list|delete ]];then
     Single=(`snapper list 2>/dev/null | awk 'ORS=" " {if($3~/[0-9]+/ && $1 == "single" && $3 != 0) print $3}'`)
     #pre-post 快照
     PrePost=(`snapper list 2>/dev/null | awk 'ORS=" " {if($3~/[0-9]+/ && $1~/pre|post/ && $3 != 0) print $3}'`)
+    #系统自动创建的快照
+    Sya=(`snapper list 2>/dev/null | awk 'ORS=" " {if($3~/[0-9]+/ && ($12~/timeline|number/ || $13 == "number") && $3 != 0) print $3}'`)
 elif [[ $1 =~ -i|-l|-d|info|list|delete ]];then
     echo -e "\n必须拥有 root 权限方可进行此操作！\n"
     exit
@@ -153,8 +155,22 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
             echo "删除成功！"
         fi
         exit
+    #删除系统自动创建的快照
+    elif [[ $2 = "sya" || $2 = "-S" ]];then
+        if [[ ${#Sya[*]} = 0 ]];then
+            echo -e "\n没有快照可清除！"
+            exit
+        else
+            echo -e  "\n快照编号: ${Sya[*]}\n"
+            read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+            if [[ $yn =~ yes|y|Y|YES ]];then
+                snapper delete ${Sya[*]}
+                echo "删除成功！"
+            fi
+            exit
+        fi
     else
-        echo -e "\n警告：快照类型错误！\n\n    请使用以下快照类型：\n\t全部：all\t-a\n\t独立：single\t-s\n\t差异：pre-post\t-p\n"
+        echo -e "\n警告：快照类型错误！\n\n    请使用以下快照类型：\n\t全部：all\t-a\n\t独立：single\t-s\n\t差异：pre-post\t-p\n\t系统：sya\t-S\n"
         exit
     fi
 fi
@@ -167,10 +183,11 @@ echo -e "   \tdelete, -d\t删除快照。\n"
 echo -e "\t'delete' 命令选项："
 echo -e "\t   all, -a\t删除全部快照。"
 echo -e "\t   single, -s\t删除全部独立（single）快照。"
-echo -e "\t   pre-post, -p\t删除全部差异（pre-post）快照。\n"
+echo -e "\t   pre-post, -p\t删除全部差异（pre-post）快照。"
+echo -e "\t   sya, -S\t删除全部由系统自动生成的快照。\n"
 echo -e "\t'delete' 命令参数："
 echo -e "\t   number\t删除最旧的 n 个快照。(number 为正整数)"
-echo -e "\t   -number\t删除最新的 n 个的快照。(number 为负整数)\n"
+echo -e "\t   -number\t删除最新的 n 个的快照。(-number 为负整数)\n"
 echo -e "   示例："
 echo -e "\t删除最旧的5个独立快照:\n\t   bsc -d -s 5\n"
 echo -e "\t删除所有差异快照:\n\t   bsc -d -p\n"
