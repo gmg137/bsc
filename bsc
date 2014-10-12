@@ -40,8 +40,7 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
                 echo -e  "\n快照编号: ${asnap[*]:0:$3}\n"
                 read -a yn -p "你确认要删除以上快照吗？[yes/no]："
                 if [[ $yn =~ yes|y|Y|YES ]];then
-                    snapper delete ${asnap[*]:0:$3}
-                    echo "删除成功！"
+                    (snapper delete ${asnap[*]:0:$3} && echo "删除成功！") || echo "请稍后再试！"
                 fi
                 exit
             #删除最新的n个快照
@@ -55,8 +54,7 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
                 echo -e  "\n快照编号: ${asnap[*]:$sta:${#asnap[*]}}\n"
                 read -a yn -p "你确认要删除以上快照吗？[yes/no]："
                 if [[ $yn =~ yes|y|Y|YES ]];then
-                    snapper delete ${asnap[*]:$sta:${#asnap[*]}} &&
-                    echo "删除成功！"
+                    (snapper delete ${asnap[*]:$sta:${#asnap[*]}} && echo "删除成功！") || echo "请稍后再试！"
                 fi
                 exit
             else
@@ -67,8 +65,7 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
         echo -e  "\n快照编号: ${asnap[*]}\n"
         read -a yn -p "你确认要删除以上快照吗？[yes/no]："
         if [[ $yn =~ yes|y|Y|YES ]];then
-            snapper delete ${asnap[*]}
-            echo "删除成功！"
+            (snapper delete ${asnap[*]} && echo "删除成功！") || echo "请稍后再试！"
         fi
         exit
     #删除单独(single)快照
@@ -82,8 +79,7 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
                 echo -e  "\n快照编号: ${Single[*]:0:$3}\n"
                 read -a yn -p "你确认要删除以上快照吗？[yes/no]："
                 if [[ $yn =~ yes|y|Y|YES ]];then
-                    snapper delete ${Single[*]:0:$3}
-                    echo "删除成功！"
+                    (snapper delete ${Single[*]:0:$3} && echo "删除成功！") || echo "请稍后再试！"
                 fi
                 exit
             #删除最新的n个快照
@@ -97,8 +93,7 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
                 echo -e  "\n快照编号: ${Single[*]:$sta:${#Single[*]}}\n"
                 read -a yn -p "你确认要删除以上快照吗？[yes/no]："
                 if [[ $yn =~ yes|y|Y|YES ]];then
-                    snapper delete ${Single[*]:$sta:${#Single[*]}}
-                    echo "删除成功！"
+                    (snapper delete ${Single[*]:$sta:${#Single[*]}} && echo "删除成功！") || echo "请稍后再试！"
                 fi
                 exit
             else
@@ -109,8 +104,7 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
         echo -e  "\n快照编号: ${Single[*]}\n"
         read -a yn -p "你确认要删除以上快照吗？[yes/no]："
         if [[ $yn =~ yes|y|Y|YES ]];then
-            snapper delete ${Single[*]}
-            echo "删除成功！"
+            (snapper delete ${Single[*]} && echo "删除成功！") || echo "请稍后再试！"
         fi
         exit
     #删除差异(pre-post)快照
@@ -124,8 +118,7 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
                 echo -e  "\n快照编号: ${PrePost[*]:0:$3}\n"
                 read -a yn -p "你确认要删除以上快照吗？[yes/no]："
                 if [[ $yn =~ yes|y|Y|YES ]];then
-                    snapper delete ${PrePost[*]:0:$3}
-                    echo "删除成功！"
+                    (snapper delete ${PrePost[*]:0:$3} && echo "删除成功！") || echo "请稍后再试！"
                 fi
                 exit
             #删除最新的n个快照
@@ -139,8 +132,7 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
                 echo -e  "\n快照编号: ${PrePost[*]:$sta:${#PrePost[*]}}\n"
                 read -a yn -p "你确认要删除以上快照吗？[yes/no]："
                 if [[ $yn =~ yes|y|Y|YES ]];then
-                    snapper delete ${PrePost[*]:$sta:${#PrePost[*]}}
-                    echo "删除成功！"
+                    (snapper delete ${PrePost[*]:$sta:${#PrePost[*]}} && echo "删除成功！") || echo "请稍后再试！"
                 fi
                 exit
             else
@@ -151,8 +143,7 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
         echo -e  "\n快照编号: ${PrePost[*]}\n"
         read -a yn -p "你确认要删除以上快照吗？[yes/no]："
         if [[ $yn =~ yes|y|Y|YES ]];then
-            snapper delete ${PrePost[*]}
-            echo "删除成功！"
+            (snapper delete ${PrePost[*]} && echo "删除成功！") || echo "请稍后再试！"
         fi
         exit
     #删除系统自动创建的快照
@@ -164,8 +155,7 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
             echo -e  "\n快照编号: ${Sya[*]}\n"
             read -a yn -p "你确认要删除以上快照吗？[yes/no]："
             if [[ $yn =~ yes|y|Y|YES ]];then
-                snapper delete ${Sya[*]}
-                echo "删除成功！"
+                (snapper delete ${Sya[*]} && echo "删除成功！") || echo "请稍后再试！"
             fi
             exit
         fi
