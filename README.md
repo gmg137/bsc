@@ -8,11 +8,11 @@ bsc (Btrfs snapshot cleanup）
 
 ###一、依赖
 
-> awk
+> 无
 
 ###二、安装
 
-####1、[下载脚本](https://github.com/gmg137/bsc/archive/master.zip)
+####1、[下载脚本](https://github.com/gmg137/bsc/archive/ruby.zip)
 
 ####2、解压后赋予 bsc 执行权限
 
