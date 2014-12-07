@@ -117,7 +117,7 @@ if $ones =~ /-d|delete/
       print "\n\n确认要删除以上快照吗？[yes/no]："
       yn = STDIN.gets.chomp()
       if yn =~ /yes|y|Y|YES/
-        puts `snapper #$conf #$confp delete #{asnap..join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        puts `snapper #$conf #$confp delete #{asnap.join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
       end
       exit
     end
@@ -161,7 +161,7 @@ if $ones =~ /-d|delete/
       print "\n\n确认要删除以上快照吗？[yes/no]："
       yn = STDIN.gets.chomp()
       if yn =~ /yes|y|Y|YES/
-        puts `snapper #$conf #$confp delete #{single..join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        puts `snapper #$conf #$confp delete #{single.join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
       end
       exit
     end
@@ -205,7 +205,7 @@ if $ones =~ /-d|delete/
       print "\n\n确认要删除以上快照吗？[yes/no]："
       yn = STDIN.gets.chomp()
       if yn =~ /yes|y|Y|YES/
-        puts `snapper #$conf #$confp delete #{prepost..join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        puts `snapper #$conf #$confp delete #{prepost.join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
       end
       exit
     end
@@ -249,7 +249,7 @@ if $ones =~ /-d|delete/
       print "\n\n确认要删除以上快照吗？[yes/no]："
       yn = STDIN.gets.chomp()
       if yn =~ /yes|y|Y|YES/
-        puts `snapper #$conf #$confp delete #{sya..join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
+        puts `snapper #$conf #$confp delete #{sya.join(' ')} && echo "删除成功！" || echo "警告：删除失败，请稍后再试！"`
       end
       exit
     end
