@@ -13,16 +13,16 @@ def snanum(str,cla)
   elsif cla == "sya"
     clas = /number|timeline/
   end
-  $data = []
+  data = []
   str.each_line do |i|
     if clas.match(i) != nil && i !~ /\|\s0\s{1,4}\|/ 
       i.scan(/\|\s(\d+)\s{1,4}\|/)
     end
     if $1 != nil
-      $data += [$1]
+      data += [$1]
     end
   end
-  return $data
+  return data
 end
 
 
