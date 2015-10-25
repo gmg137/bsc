@@ -15,7 +15,7 @@ def snanum(str,cla)
   end
   data = []
   str.each_line do |i|
-    if clas.match(i) != nil && i !~ /\|\s0\s{1,4}\|/ 
+    if clas.match(i) != nil && i !~ /\|\s0\s{1,4}\|/ && i !~ /first root filesystem/
       i.scan(/\|\s(\d+)\s{1,4}\|/)
     end
     if $1 != nil
