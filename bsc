@@ -5,7 +5,7 @@
 #抓取方法
 def snanum(str,cla)
   if cla == "asnap"
-    clas = /\|\s\d+\s{1,4}\|/
+    clas = /\d+\s{1,4}\|/
   elsif cla == "single"
     clas = /single/
   elsif cla == "prepost"
@@ -15,8 +15,8 @@ def snanum(str,cla)
   end
   data = []
   str.each_line do |i|
-    if clas.match(i) != nil && i !~ /\|\s0\s{1,4}\|/ 
-      i.scan(/\|\s(\d+)\s{1,4}\|/)
+    if clas.match(i) != nil && i !~ /^\s+0\s{1,4}\|/ && i !~ /^\s+\d+\*\s{1,4}\|/
+      i.scan(/^\s{0,2}(\d+)\s{1,4}\|/)
     end
     if $1 != nil
       data += [$1]
