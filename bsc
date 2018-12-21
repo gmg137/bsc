@@ -3,13 +3,13 @@
 
 if [[ -n `snapper list 2>/dev/null` &&  $1 =~ -i|-l|-d|info|list|delete ]];then
     #所有快照
-    asnap=(`snapper list 2>/dev/null | awk 'ORS=" " {if($3~/[0-9]+/ && $3 != 0) print $3}'`)
+    asnap=(`snapper list 2>/dev/null | awk 'ORS=" " {if($1~/[0-9]+/ && $1 != 0 && $1!~/[0-9]+\*/) print $1}'`)
     #single 快照
-    Single=(`snapper list 2>/dev/null | awk 'ORS=" " {if($3~/[0-9]+/ && $1 == "single" && $3 != 0) print $3}'`)
+    Single=(`snapper list 2>/dev/null | awk 'ORS=" " {if($1~/[0-9]+/ && $3~/single/ && $1 != 0 && $1!~/[0-9]+\*/) print $1}'`)
     #pre-post 快照
-    PrePost=(`snapper list 2>/dev/null | awk 'ORS=" " {if($3~/[0-9]+/ && $1~/pre|post/ && $3 != 0) print $3}'`)
+    PrePost=(`snapper list 2>/dev/null | awk 'ORS=" " {if($1~/[0-9]+/ && $3~/pre|post/ && $1 != 0 && $1!~/[0-9]+\*/) print $1}'`)
     #系统自动创建的快照
-    Sya=(`snapper list 2>/dev/null | awk 'ORS=" " {if($3~/[0-9]+/ && ($12~/timeline|number/ || $13 == "number") && $3 != 0) print $3}'`)
+    Sya=(`snapper list 2>/dev/null | awk 'ORS=" " {if($1~/[0-9]+/ && ($12~/timeline|number/ || $13 == "number") && $1 != 0 && $1!~/[0-9]+\*/) print $1}'`)
 elif [[ $1 =~ -i|-l|-d|info|list|delete ]];then
     echo -e "\n必须拥有 root 权限方可进行此操作！\n"
     exit
@@ -23,7 +23,7 @@ fi
 
 #查看快照概要
 if [[ $1 = "-i" || $1 = "info" ]];then
-    echo -e "\n快照类型      快照个数\n-------------------------\n single\t\t${#Single[*]}\n pre-post\t${#PrePost[*]}\n-------------------------\n  合计\t\t${#asnap[*]}\n"
+    echo -e "\n快照类型      快照个数\n-------------------------\n single\t\t${#Single[*]}\n pre-post\t${#PrePost[*]}\n system\t\t${#Sya[*]}\n-------------------------\n  合计\t\t${#asnap[*]}\n"
     exit
 fi
 
@@ -151,14 +151,40 @@ if [[ $1 = "-d"  || $1 = "delete" ]];then
         if [[ ${#Sya[*]} = 0 ]];then
             echo -e "\n没有快照可清除！"
             exit
-        else
-            echo -e  "\n快照编号: ${Sya[*]}\n"
-            read -a yn -p "你确认要删除以上快照吗？[yes/no]："
-            if [[ $yn =~ yes|y|Y|YES ]];then
-                (snapper delete ${Sya[*]} && echo "删除成功！") || echo "请稍后再试！"
+        elif [[ -n $3 ]];then
+            #删除最旧的n个快照
+            if [[ $3 =~ ^[1-9][0-9]*$ ]];then
+                echo -e  "\n快照编号: ${Sya[*]:0:$3}\n"
+                read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+                if [[ $yn =~ yes|y|Y|YES ]];then
+                    (snapper delete ${Sya[*]:0:$3} && echo "删除成功！") || echo "请稍后再试！"
+                fi
+                exit
+            #删除最新的n个快照
+            elif [[ $3 =~ ^-[1-9][0-9]*$ ]];then
+                sta=${#Sya[*]}$3
+                if [[ $sta -ge 0 ]];then
+                    sta=${#Sya[*]}$3
+                else
+                    sta=0
+                fi
+                echo -e  "\n快照编号: ${Sya[*]:$sta:${#Sya[*]}}\n"
+                read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+                if [[ $yn =~ yes|y|Y|YES ]];then
+                    (snapper delete ${Sya[*]:$sta:${#Sya[*]}} && echo "删除成功！") || echo "请稍后再试！"
+                fi
+                exit
+            else
+                echo "警告：参数必须为正负整数！"
+                exit
             fi
-            exit
         fi
+        echo -e  "\n快照编号: ${Sya[*]}\n"
+        read -a yn -p "你确认要删除以上快照吗？[yes/no]："
+        if [[ $yn =~ yes|y|Y|YES ]];then
+            (snapper delete ${Sya[*]} && echo "删除成功！") || echo "请稍后再试！"
+        fi
+        exit
     else
         echo -e "\n警告：快照类型错误！\n\n    请使用以下快照类型：\n\t全部：all\t-a\n\t独立：single\t-s\n\t差异：pre-post\t-p\n\t系统：sya\t-S\n"
         exit
